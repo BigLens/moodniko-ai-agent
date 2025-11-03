@@ -1,8 +1,11 @@
-import { contextualMoodAgent } from "./mastra/index";
+import { config } from 'dotenv';
+config();
+
+import { mastra } from "./mastra/index";
 
 async function testMoodAgent() {
-  const userId = "test-user-001";
-
+  console.log('Testing Mood Agent...\n');
+  
   const conversation = [
     "Hi there",
     "I'm feeling really sad today",
@@ -12,17 +15,26 @@ async function testMoodAgent() {
     "music",
   ];
 
+  const agent = mastra.getAgent('moodAgent');
+  
+  if (!agent) {
+    console.error('Agent not found!');
+    return;
+  }
+
   for (const message of conversation) {
     try {
-      const response = await contextualMoodAgent.chat(userId, message);
+      console.log(`User: ${message}`);
+      const response = await agent.generate([{ role: 'user', content: message }]);
+      console.log(`Agent: ${response.text}\n`);
     } catch (error: any) {
-      console.error("Error occurred:", error);
+      console.error('Error occurred:', error.message);
     }
 
     await new Promise((resolve) => setTimeout(resolve, 1000));
   }
 
-  contextualMoodAgent.resetSession(userId);
+  console.log('Test completed!');
 }
 
 testMoodAgent();

@@ -1,63 +1,37 @@
-import { Agent } from "@mastra/core";
-import { google } from "@ai-sdk/google";
-import {
-  logMood,
-  getContentRecommendations,
-  getMoodHistory,
-  analyzeMoodPattern,
-} from "../tools/mood-tools";
+import { Agent } from '@mastra/core/agent';
+import { google } from '@ai-sdk/google';
+import { moodnikoTool } from '../tools/moodniko-tool';
+import { Memory } from '@mastra/memory';
+import { LibSQLStore } from '@mastra/libsql';
+
+
+const memoryStore = new Memory({
+  storage: new LibSQLStore({ url: ':memory:' }),
+});
 
 export const moodAgent = new Agent({
-  name: "Mood Analyzer",
-  instructions: `You are Moodniko, a warm and intelligent AI companion powered by Google Gemini.
+  name: 'Mood Agent',
+  model: google('gemini-2.0-flash'),
+  tools: { moodnikoTool },
+  memory: memoryStore,
+  instructions: `
+    You are a helpful mood-based content recommendation assistant powered by Moodniko.
+    Remember the user's last stated mood and content preference within the same session.
 
-YOUR INTELLIGENCE & PERSONALITY:
-- Understand natural language and emotional context deeply
-- Recognize emotions expressed in different ways ("feeling down" = sad, "stressed out" = stressed)
-- Be empathetic, supportive, and genuinely caring
-- Have natural, flowing conversations - not robotic responses
-- Remember context within the conversation
+    If user provides a mood, store it in memory.
+    If user provides a content type, retrieve the last stored mood and use both to fetch recommendations.
+    If both are known, immediately fetch recommendations using moodnikoTool.
 
-WORKFLOW:
-1. When user expresses emotion:
-   - Call logMood tool with their mood + sessionId
-   - Respond warmly: "I understand you're feeling [mood]. I can recommend books, music, videos, podcasts, articles, or movies. What would help?"
+  Formatting rule:
 
-2. When user requests content:
-   - Read the [SESSION STATE] mood from the system context (it's always provided)
-   - Call getContentRecommendations with: mood FROM SESSION + content type + sessionId
-   - Present 5 recommendations in numbered list
-   - End with: "Want more [content]?"
-
-3. When user wants more ("yes", "more", "sure", etc.):
-   - Call getContentRecommendations again with same parameters
-   - Show new recommendations
-
-4. Mood changes mid-conversation:
-   - Acknowledge naturally: "I sense you're feeling [new mood] now."
-   - Call logMood with new mood
-   - Ask what content would help
-
-CRITICAL TOOL USAGE RULES (READ EVERY TIME):
-- The [SESSION STATE] shows the authoritative mood - ALWAYS use it
-- If session shows mood="anxious", use mood="anxious" in tools (NOT sad/happy)
-- sessionId is provided in the system context - use that EXACT value
-- NEVER generate random session IDs
-
-NATURAL LANGUAGE UNDERSTANDING:
-- "I'm feeling down and could use some music" → mood=sad, content=music
-- "more please" after recommendations → user wants more of same type
-- "actually I'm happy now" → mood changed to happy
-- "I'm stressed" → mood=stressed (understand synonyms)
-
-Be intelligent, natural, and helpful!`,
-
-  model: google("gemini-1.5-flash"),
-
-  tools: {
-    logMood,
-    getContentRecommendations,
-    getMoodHistory,
-    analyzeMoodPattern,
-  },
+  When showing results from moodnikoTool, always format them as a **numbered list** (1., 2., 3., etc.)
+  Example:
+  Here are some calming songs you might enjoy:
+  1. Weightless – Marconi Union
+  2. Bloom – ODESZA
+  3. Breathe Me – Sia
+    
+  Respond conversationally, friendly, and concise.
+  `,
 });
+

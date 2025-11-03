@@ -1,120 +1,61 @@
 # Moodniko AI Agent
 
-An AI-powered mood tracking and analysis agent built with Mastra and Google Gemini.
+A Mastra-based AI agent that provides mood-based content recommendations using the Moodniko API.
 
-## Features
+## Architecture
 
-- 🎭 Mood logging and tracking
-- 📊 Pattern analysis and insights
-- 💡 Personalized recommendations
-- 🧠 Intelligent mood analysis using Gemini 1.5 Flash
-- 📈 Historical mood data tracking
+Built following the Mastra framework pattern:
+
+1. **Mood Agent** (`src/agents/mood-agent.ts`) - Gemini-powered agent that extracts moods and content types from natural conversation
+2. **Moodniko Tool** (`src/tools/moodniko-tool.ts`) - Fetches content from Moodniko API based on mood and content type
+3. **A2A Route Handler** (`src/routes/a2a-agent-route.ts`) - Handles A2A protocol for agent communication
+4. **Mastra Instance** (`src/mastra/index.ts`) - Main Mastra configuration with agent, storage, and routes
 
 ## Setup
 
 1. Install dependencies:
-
 ```bash
 npm install
 ```
 
-2. Your `.env` file should contain:
-
-```
-GOOGLE_GENERATIVE_AI_API_KEY=your_key_here
-DB_URL=file:local.db
-```
-
-## Usage
-
-### Start Development Server
-
+2. Set up environment variables:
 ```bash
-npm run dev
+GOOGLE_GENERATIVE_AI_API_KEY=your_api_key_here
+MOODNIKO_API_URL=https://moodniko-backend.onrender.com
 ```
 
-This will start the Mastra development server at http://localhost:3456
-
-### Test the Agent
-
+3. Run tests:
 ```bash
 npm run test-agent
 ```
 
-### Build for Production
-
+4. Start dev server:
 ```bash
-npm run build
+npm run dev
 ```
 
-## Interacting with the Agent
+## How It Works
 
-Once the dev server is running, you can interact with the agent through:
+1. User expresses mood or asks for content
+2. Gemini extracts mood and content type from natural language
+3. When both are available, the agent calls moodnikoTool
+4. Tool fetches from Moodniko API: `/contents?mood={mood}&type={type}`
+5. Returns formatted recommendations
 
-1. **Mastra Playground**: Visit http://localhost:3456 in your browser
-2. **API Endpoints**: Use the Mastra API endpoints
-3. **Direct Integration**: Import and use the agent in your code
+## API Endpoints
 
-## Example Interactions
+- `POST /a2a/agent/moodAgent` - A2A protocol endpoint for agent communication
 
-### Log a Mood
+## Content Types & Moods
 
-```
-"I'm feeling anxious today, around 7/10 intensity. I have a big meeting coming up."
-```
+**Supported Content Types:** movies, music, podcasts, books, videos, articles
 
-### Get Recommendations
+**Supported Moods:** happy, sad, anxious, excited, stressed, tired, bored, motivated, peaceful, romantic, nostalgic, inspired, angry, relaxed, calm, energetic, frustrated, content, confused, scared, lonely, moody
 
-```
-"Can you give me some recommendations for dealing with stress?"
-```
+## Example Flow
 
-### Check Mood History
+User: "I'm feeling anxious"
+Agent: "I understand. What type of content would you like?"
 
-```
-"What were my moods like last week?"
-```
-
-### Analyze Patterns
-
-```
-"Can you analyze my mood patterns and identify any triggers?"
-```
-
-## Agent Capabilities
-
-The Mood Analyzer agent can:
-
-- Log moods with intensity levels (1-10)
-- Track activities and triggers associated with moods
-- Analyze mood patterns over time
-- Provide personalized recommendations
-- Identify trends and potential triggers
-
-## Available Tools
-
-- **logMood**: Record current mood with context
-- **getMoodHistory**: Retrieve past mood entries
-- **analyzeMoodPattern**: Identify patterns and trends
-- **getMoodRecommendations**: Get personalized suggestions
-
-## Mood Categories
-
-- happy
-- sad
-- anxious
-- calm
-- energetic
-- tired
-- stressed
-- content
-- frustrated
-- excited
-
-## Next Steps
-
-1. Implement database persistence for mood entries
-2. Add user authentication
-3. Create a web or mobile interface
-4. Add data visualization for mood trends
-5. Integrate with other health/wellness apps
+User: "movies"
+Agent: *calls moodnikoTool* → Returns movie recommendations for anxious mood
