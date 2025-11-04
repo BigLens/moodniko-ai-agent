@@ -78,10 +78,13 @@ export const a2aAgentRoute = registerApiRoute('/a2a/agent/:agentId', {
         ...session.HISTORY,
         ...mastraMessages,
       ]);
-      
-      
 
-      const agentText = response.text || '';
+  const agentText =
+  (response as any)?.output?.[0]?.content?.[0]?.text ??
+  (response as any)?.text ??
+  'No response text available.';
+
+
 
       session.HISTORY = [
         ...session.HISTORY,

@@ -10,7 +10,7 @@ const memoryStore = new Memory({
 });
 
 export const moodAgent = new Agent({
-  name: 'Mood Agent',
+  name: 'mood-agent',
   model: google('gemini-2.0-flash'),
   tools: { moodnikoTool },
   memory: memoryStore,
